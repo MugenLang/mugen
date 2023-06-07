@@ -1,0 +1,43 @@
+# Compiled object files
+*.o
+*.obj
+
+# Compiled dynamic libraries
+*.dll
+*.so
+*.dylib
+
+# Executable files
+*.exe
+*.out
+
+# CMake build directory
+build/
+
+# Visual Studio Code project files
+.vscode/
+
+# Compiled output directory
+bin/
+
+# IDE-specific files
+*.suo
+*.user
+*.sdf
+*.opensdf
+*.cproj
+*.vcxproj
+*.vcxproj.filters
+*.pdb
+
+# Dependency directories
+vendor/
+
+# Compiled library files
+lib/
+
+# macOS specific files
+.DS_Store
+
+# Editor backup files
+*~

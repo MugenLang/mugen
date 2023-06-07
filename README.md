@@ -1,0 +1,3 @@
+# Mugen
+
+The ♾️ Programming Language
