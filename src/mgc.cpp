@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <lexer/lexer.hpp>
+#include <lexer/token.hpp>
+#include <parser/parser.hpp>
 
 /*
 🟦🟦🟦🟦🟦➖🟦🟦
@@ -15,7 +17,7 @@
 Blahaj Debugging <3*/
 
 int main() {
-    std::ifstream inputFile("exs/Final.g");
+    std::ifstream inputFile("exs/01-Functions.g");
     inputFile.rdbuf()->pubsetbuf(nullptr, 0);
 
     // Read the entire file content into a string
@@ -23,6 +25,7 @@ int main() {
                             std::istreambuf_iterator<char>());
 
     inputFile.close();
-    Tokenize(fileContent);
+    std::vector<Token*> tokens=Tokenize(fileContent);
+    Parse(tokens, fileContent);
     return 0;
 }

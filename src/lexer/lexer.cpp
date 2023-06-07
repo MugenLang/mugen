@@ -6,20 +6,20 @@
 
 class Lexer {
     public:
-        Lexer(const std::string& input) : input_(input), position_(0), line_(0) {}
+        Lexer(const std::string& input) : input_(input), position_(0), line_(1), col_(1) {}
 
         Token* getNextToken() {
             if (position_ >= input_.size()) {
-                return new Token{TOKEN_EOF, "", "EOF", position_, line_};
+                return new Token{TOKEN_EOF, "", "EOF", position_, line_, col_};
             }
 
             advance();
 
             while (isspace(currentChar)) {
-                if (currentChar == '\n') {line_++;}
+                if (currentChar == '\n') {line_++; col_=0;}
                 advance();}
 
-            if (currentChar == '\0') {return new Token{TOKEN_EOF, "", "EOF", position_, line_};}
+            if (currentChar == '\0') {return new Token{TOKEN_EOF, "", "EOF", position_, line_, col_};}
 
             if (isdigit(currentChar)) {
                 return parseNum();
@@ -50,52 +50,56 @@ class Lexer {
             ) {
                 if ((std::string(1,currentChar)+std::string(1,next())) == "::") {
                     advance();
-                    return new Token{TokenType::TOKEN_DCOLON, "::", "DColon", position_, line_};
+                    return new Token{TokenType::TOKEN_DCOLON, "::", "DColon", position_, line_, col_};
                 }
                 else if ((std::string(1,currentChar)+std::string(1,next())) == "==") {
                     advance();
-                    return new Token{TokenType::TOKEN_DEQUAL, "==", "Dequal", position_, line_};
+                    return new Token{TokenType::TOKEN_DEQUAL, "==", "Dequal", position_, line_, col_};
                 }
                 else if ((std::string(1,currentChar)+std::string(1,next())) == "!=") {
                     advance();
-                    return new Token{TokenType::TOKEN_NEQUAL, "!=", "Nequal", position_, line_};
+                    return new Token{TokenType::TOKEN_NEQUAL, "!=", "Nequal", position_, line_, col_};
                 }
                 else if ((std::string(1,currentChar)+std::string(1,next())) == ";;") {
                     parseComment();
                 }
                 switch (currentChar) {
-                    case ':': return new Token{TokenType::TOKEN_COLON, ":", "Colon", position_, line_};
-                    case ';': return new Token{TokenType::TOKEN_SEMICOLON, ";", "Semicolon", position_, line_};
-                    case '(': return new Token{TokenType::TOKEN_LPAREN, "(", "LParen", position_, line_};
-                    case ')': return new Token{TokenType::TOKEN_RPAREN, ")", "RParen", position_, line_};
+                    case ':': return new Token{TokenType::TOKEN_COLON, ":", "Colon", position_, line_, col_};
+                    case ';': return new Token{TokenType::TOKEN_SEMICOLON, ";", "Semicolon", position_, line_, col_};
+                    case '(': return new Token{TokenType::TOKEN_LPAREN, "(", "LParen", position_, line_, col_};
+                    case ')': return new Token{TokenType::TOKEN_RPAREN, ")", "RParen", position_, line_, col_};
                     case ',': return new Token{TokenType::TOKEN_COMMA, ",", "Comma", position_};
-                    case '[': return new Token{TokenType::TOKEN_LBRACKET, "[", "LBracket", position_, line_};
-                    case ']': return new Token{TokenType::TOKEN_RBRACKET, "]", "RBracket", position_, line_};
-                    case '{': return new Token{TokenType::TOKEN_LBRACE, "{", "LBrace", position_, line_};
-                    case '}': return new Token{TokenType::TOKEN_RBRACE, "}", "RBrace", position_, line_};
-                    case '?': return new Token{TokenType::TOKEN_QMARK, "?", "QeMark", position_, line_};
-                    case '>': return new Token{TokenType::TOKEN_GREAT, ">", "Great", position_, line_};
-                    case '<': return new Token{TokenType::TOKEN_LESS, "<", "Less", position_, line_};
-                    case '=': return new Token{TokenType::TOKEN_EQUAL, "=", "Eq", position_, line_};
-                    case '|': return new Token{TokenType::TOKEN_OR, "|", "Or", position_, line_};
-                    case '$': return new Token{TokenType::TOKEN_DLR, "$", "Dollar", position_, line_};
+                    case '[': return new Token{TokenType::TOKEN_LBRACKET, "[", "LBracket", position_, line_, col_};
+                    case ']': return new Token{TokenType::TOKEN_RBRACKET, "]", "RBracket", position_, line_, col_};
+                    case '{': return new Token{TokenType::TOKEN_LBRACE, "{", "LBrace", position_, line_, col_};
+                    case '}': return new Token{TokenType::TOKEN_RBRACE, "}", "RBrace", position_, line_, col_};
+                    case '?': return new Token{TokenType::TOKEN_QMARK, "?", "QeMark", position_, line_, col_};
+                    case '>': return new Token{TokenType::TOKEN_GREAT, ">", "Great", position_, line_, col_};
+                    case '<': return new Token{TokenType::TOKEN_LESS, "<", "Less", position_, line_, col_};
+                    case '=': return new Token{TokenType::TOKEN_EQUAL, "=", "Eq", position_, line_, col_};
+                    case '|': return new Token{TokenType::TOKEN_OR, "|", "Or", position_, line_, col_};
+                    case '$': return new Token{TokenType::TOKEN_DLR, "$", "Dollar", position_, line_, col_};
                     case '"': return parseString();
                     case '\'': return parseChar();
-
                 }
             }
 
             else if (isOperator() || dOperator()) {
                 if (currentChar == '-' || currentChar == '+') {
-                    if (!isalnum(beef())) {
-                        return parseNum();
+                    if (!isalnum(beef()) && !isdigit(beef())) {
+                        if (!isalnum(beef())) {
+                            return parseId();
+                        }
+                        else if (!isdigit(beef())) {
+                            return parseNum();
+                        }
                     }
                     else {
                         if (dOperator()) {
-                            return new Token{TokenType::TOKEN_OP, (std::string(1,currentChar)+std::string(1,next())), "Operator", position_, line_};
+                            return new Token{TokenType::TOKEN_OP, (std::string(1,currentChar)+std::string(1,next())), "Operator", position_, line_, col_};
                         }
                         else {
-                            return new Token{TokenType::TOKEN_OP, std::string(1, currentChar), "Operator", position_, line_};
+                            return new Token{TokenType::TOKEN_OP, std::string(1, currentChar), "Operator", position_, line_, col_};
                         }
                     }
                 }
@@ -106,7 +110,7 @@ class Lexer {
                 exit(1);
             }
 
-            return new Token{TOKEN_DEFAULT, std::string(1, currentChar), "DEFAULT", position_, line_};
+            return new Token{TOKEN_DEFAULT, std::string(1, currentChar), "DEFAULT", position_, line_, col_};
         }
 
     private:
@@ -114,6 +118,7 @@ class Lexer {
         char currentChar;
         std::size_t position_;
         std::size_t line_;
+        std::size_t col_;
 
         bool isOperator() {
             for (const char* op : OPERATORS) {
@@ -148,19 +153,27 @@ class Lexer {
                 advance();
             }
 
+
+
             retro();
 
             if (isInt) {
-                return new Token{TokenType::TOKEN_INTEGER, value, "Integer", position_, line_};
+                return new Token{TokenType::TOKEN_INTEGER, value, "Integer", position_, line_, col_};
             }
             else {
-                return new Token{TokenType::TOKEN_FLOAT, value, "Float", position_, line_};
+                return new Token{TokenType::TOKEN_FLOAT, value, "Float", position_, line_, col_};
             }
         }
 
         Token* parseId() {
             std::string value="";
             bool isInt=true;
+
+            if (currentChar == '-' || currentChar == '+') {
+                value+=currentChar;
+                advance();
+            }
+
             while (isalnum(currentChar) || currentChar == '.') {
                 value+=currentChar;
                 advance();
@@ -168,11 +181,12 @@ class Lexer {
 
             retro();
 
-            return new Token{TokenType::TOKEN_IDENTIFIER, value, "Identifier", position_, line_};
+            return new Token{TokenType::TOKEN_IDENTIFIER, value, "Identifier", position_, line_, col_};
         }
 
         Token* parseString() {
-            std::string value="";
+            std::string value=std::string(1, currentChar);
+            advance();
             while (currentChar != '\0') {
                 value+=currentChar;
                 if (currentChar == '"') {
@@ -180,11 +194,12 @@ class Lexer {
                 }
                 advance();
             }
-            return new Token{TokenType::TOKEN_STRING, value, "String", position_, line_};
+            return new Token{TokenType::TOKEN_STRING, value, "String", position_, line_, col_};
         }
 
         Token* parseChar() {
-            std::string value="";
+            std::string value=std::string(1, currentChar);
+            advance();
             while (currentChar != '\0') {
                 value+=currentChar;
                 if (currentChar == '\'') {
@@ -192,7 +207,7 @@ class Lexer {
                 }
                 advance();
             }
-            return new Token{TokenType::TOKEN_CHAR, value, "Char", position_, line_};
+            return new Token{TokenType::TOKEN_CHAR, value, "Char", position_, line_, col_};
         }
 
         void parseComment() {
@@ -212,11 +227,13 @@ class Lexer {
         void retro() {
             position_--;
             currentChar=input_[position_];
+            col_--;
         }
 
         void advance() {
             position_++;
             currentChar=input_[position_];
+            col_++;
         }
 
         void setPos(int pos) {

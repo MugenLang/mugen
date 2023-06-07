@@ -9,7 +9,10 @@ class Lexer {
 
     private:
         std::string input_;
+        char currentChar;
         std::size_t position_;
+        std::size_t line_;
+        std::size_t col_;
 
         bool isOperator();
 
@@ -24,4 +27,4 @@ class Lexer {
 
 };
 
-void Tokenize(std::string code);
+std::vector<Token*> Tokenize(std::string code);

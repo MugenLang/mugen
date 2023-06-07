@@ -7,7 +7,6 @@ task[Int] add(a: Int, b: Int) {
 task[Void] main() {
 	;; y=Varname     <Int>=Vartype
 	y<Int> = add(3,5);
-
 	is  (y==8)? {
 		print("y is 8");
 	}
@@ -17,7 +16,6 @@ task[Void] main() {
 	else {
 		print("y is $<y>");
 	}
-
 }
 
 ;; A structure like object

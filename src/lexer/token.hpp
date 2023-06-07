@@ -56,6 +56,7 @@ struct Token {
   std::string typestr;
   unsigned long long pos;
   unsigned long long line;
+  unsigned long long col;
 };
 
 
