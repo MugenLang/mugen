@@ -4,6 +4,7 @@
 #define TOKEN_HPP
 
 extern const char* OPERATORS[6];
+extern const char* COMPARISON_OPERATORS[8];
 
 enum TokenType {
   // TYPES

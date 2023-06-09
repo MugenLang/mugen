@@ -38,6 +38,9 @@ class Parser {
                 if (currentToken->type == TokenType::TOKEN_IDENTIFIER && currentToken->value == "task") {
                     parseFunction();
                 }
+                else if(currentToken->type == TokenType::TOKEN_IDENTIFIER && next()->type==TokenType::TOKEN_LESS) {
+                    parseVarDef();
+                }
             }
         }
 
@@ -46,6 +49,12 @@ class Parser {
                 currentToken = tokens_[index_];
                 if (currentToken->type == TokenType::TOKEN_IDENTIFIER && currentToken->value == "return") {
                     parseReturn();
+                }
+                else if(currentToken->type == TokenType::TOKEN_IDENTIFIER && next()->type==TokenType::TOKEN_LESS) {
+                    parseVarDef();
+                }
+                else if(currentToken->type == TokenType::TOKEN_IDENTIFIER && currentToken->value == "is") {
+                    parseIf();
                 }
             }
         }
@@ -103,13 +112,44 @@ class Parser {
             eat(TokenType::TOKEN_SEMICOLON, ";");
         }
 
+        void parseVarDef() {
+            std::string vname = eat(TokenType::TOKEN_IDENTIFIER, "", "Var_Name")->value;
+            eat(TokenType::TOKEN_LESS, "<");
+            std::string vtype = eat(TokenType::TOKEN_IDENTIFIER, "", "Var_Type")->value;
+            eat(TokenType::TOKEN_GREAT, ">");
+            std::string vvalue = "";
+            if (currentToken->type == TokenType::TOKEN_SEMICOLON) {advance();}
+            else if (currentToken->type == TokenType::TOKEN_EQUAL) {
+                advance();
+                vvalue = parseExpression();
+                if (currentToken->type == TokenType::TOKEN_SEMICOLON) {
+                }
+                else {
+                    std::cerr << "Unexpected token: " << currentToken->value << "\nExpected: " << "`;`\nLine: " << currentToken->line << "   Col: " << currentToken->col << std::endl;
+                    exit(1);
+                }
+            }
+            else {
+                std::cerr << "Unexpected token: " << currentToken->value << "\nExpected: " << "`;` or `=`\nLine: " << currentToken->line << "   Col: " << currentToken->col << std::endl;
+                exit(1);
+            }
+        }
+
+
+        void parseIf() {
+            eat(TokenType::TOKEN_IDENTIFIER, "is");
+            eat(TokenType::TOKEN_LPAREN, "(");
+            std::string exp = parseExpression();
+            std::cout << exp << std::endl;
+        }
+
         std::string parseExpression() {
-            std::string left = parseFactor();
+            std::string left = parseTerm();
 
             while (currentToken->type == TokenType::TOKEN_OP && isOperator(currentToken->value)) {
                 std::string op = eat(TokenType::TOKEN_OP, "", "Operator")->value;
 
-                std::string right = parseFactor();
+                std::string right = parseTerm();
                 left = left + op + right;
             }
 
@@ -149,6 +189,11 @@ class Parser {
                 std::string op = eat(TokenType::TOKEN_OP, "", "Operator")->value;
                 std::string nextExpr = parseFactor();
                 return parsePostfix(expr + op + nextExpr);
+            } else if (isComparisonOperator(currentToken->value)) {
+                std::string op = currentToken->value;
+                advance();
+                std::string nextExpr = parseExpression();
+                return expr + op + nextExpr;
             } else {
                 return expr; // Return the expression as it is without any postfix operators
             }
@@ -159,6 +204,15 @@ class Parser {
         bool isOperator(const std::string& ope) {
             for (const char* op : OPERATORS) {
                 if (std::string(op) == ope) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool isComparisonOperator(const std::string& op) {
+            for (const char* o : COMPARISON_OPERATORS) {
+                if (std::string(o) == op) {
                     return true;
                 }
             }

@@ -21,6 +21,14 @@ class Parser {
         std::size_t index_;
         std::size_t braces_;
 
+        void statements();
+
+        void parseFunction();
+
+        void parseReturn();
+        
+        void parseVarDef();
+
 
         void advance();
 };
